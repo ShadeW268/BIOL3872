@@ -305,27 +305,14 @@ Clean up the following code to produce a cleaner looking figure.
 ```{r}
 
 ggplot(iris, aes(x = Sepal.Length, y = Petal.Length, color = Species)) +
-  geom_point(size = 4, stroke = 2) +
-  theme(
-    panel.grid.major = element_line(color = "black", linewidth = 1.2),
-    panel.grid.minor = element_line(color = "gray40", linewidth = 0.8),
-    panel.background = element_rect(fill = "gray80"),
-    plot.background = element_rect(fill = "gray70"),
-    panel.border = element_rect(color = "black", fill = NA, linewidth = 3),
-    axis.title = element_text(face = "bold", size = 14),
-    axis.text = element_text(face = "bold", size = 12, color = "black"),
-    legend.background = element_rect(fill = "gray60", color = "black", linewidth = 1),
-    legend.title = element_text(face = "bold"),
-    axis.ticks = element_line(linewidth = 1.5, color = "black"),
-    axis.ticks.length = unit(0.3, "cm")
-  ) +
+  geom_point(size = 2) +
   labs(
-    x = "SEPAL LENGTH (cm)",
-    y = "PETAL LENGTH (cm)",
-    title = "IRIS DATA",
-    color = "SPECIES"
+    x = "Sepal Length (cm)",
+    y = "Petal Length (cm)",
+    title = "Iria Data",
+    color = "Species"
   ) +
-  ggtitle("IRIS SEPAL VS PETAL LENGTH")
+  ggtitle("Iris Sepal vs Petal Length")
 
 
 ```
@@ -361,7 +348,20 @@ Plot hp vs. mpg in the mtcars2 data and label the dots of four cars of interest 
 ```{r}
 # Your code here
 
+view(mtcars2)
 
+cars_to_label <- c("Hornet Sportabout", "Chrysler Imperial", "Pontiac Firebird", "Lotus Europa")
+
+mtcars2 %>%
+  rownames_to_column(var = "car") %>% 
+  ggplot(aes(x = hp, y = mpg)) +
+  geom_point() +
+  geom_text_repel(
+    data = 
+    aes(label = car),
+    size = 3
+  ) +
+  theme_classic()
 
 ```
 
@@ -604,7 +604,8 @@ Prior to R v. 4.0.0, these were typical coloring defaults:
 ```{r}
 example <- rnorm(100)
 plot(example,
-     col = oce.colorsJet(10), 
+     col = oce.colorsJet(10),
+     pch = 19,
      cex = 2)
 ```
 
