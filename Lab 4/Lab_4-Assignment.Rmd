@@ -38,7 +38,9 @@ data("iris")
 #A)
 # YOUR CODE HERE
 iris_mean <- ggplot(iris, aes(x = Species, y = Sepal.Length))+
-  stat_summary(aes(y = Sepal.Length), fun = "mean", geom = "crossbar")
+  stat_summary(aes(y = Sepal.Length), fun = "mean", geom = "crossbar")+
+  theme_classic()
+iris_mean
 
 #B)
 # YOUR CODE HERE
@@ -46,6 +48,7 @@ iris_data <- iris_mean +
   geom_boxplot()+
   geom_jitter(alpha = 0.5)+
   theme_classic()
+iris_data
 
 
 ```
@@ -69,19 +72,29 @@ data("mtcars")
 # A)
 # YOUR CODE HERE
 fuel_efficiency_plot_a <- mtcars %>%
-  rownames_to_column(var = "cartype") %>%
-  mutate(cartype = fct_reorder(cartype, mpg, .desc = TRUE)) %>%
+  rownames_to_column(var = "cartype")%>%
+  mutate(cartype = fct_reorder(cartype, mpg, .desc = TRUE))%>%
   ggplot(aes(x = cartype, y = mpg))+
-           geom_col()+
-           theme_classic()+
-  fuel_efficiency_plot_a
+  geom_col()+
+  theme_classic()
+fuel_efficiency_plot_a
 
 # B)
 # YOUR CODE HERE
-fuel_efficiency_plot_b <-
+fuel_efficiency_plot_b <- fuel_efficiency_plot_a+
+  theme_minimal(12)+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+fuel_efficiency_plot_b
 
 # C)
 # YOUR CODE HERE
+
+fuel_efficiency_plot_c <- fuel_efficiency_plot_b+
+  geom_col(aes(fill = mtcars$wt))+
+  scale_fill_viridis_b(values = mtcars$wt)+
+  labs(fill = "car weight(1000lbs)")+
+  labs(x = "car type", y = "miles per gallon")
+fuel_efficiency_plot_c
 ```
 :::
 
@@ -97,6 +110,22 @@ Patch this `cars_compared` plot with `fuel_efficiency_plot_c` as a single column
 ```{r}
 # A)
 # YOUR CODE HERE
+
+horsepower_plot <- mtcars%>%
+  rownames_to_column(var = "cartype")%>%
+  mutate(cartype = fct_reorder(cartype, hp, .desc = TRUE))%>%
+  ggplot(aes(x = cartype, y = hp))+
+  geom_point(size = 3, aes(color = hp))+
+  theme_minimal(12)+
+  scale_color_viridis_b(values = hp)+
+  theme(legend.position = "none")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs(x = "car type", y = "horsepower")
+cars_compared <- fuel_efficiency_plot_c + horsepower_plot+
+  plot_layout(ncol = 1, nrow = 2, axes = 'collect_x', axis_titles = 
+  'collect_x')
+cars_compared
+  
 ```
 :::
 
@@ -113,8 +142,40 @@ B)  Order the season variable as a factor (Levels = Winter, Spring, Summer, Autu
 # A)
 data("co2")
 # YOUR CODE HERE
+
+co2_df <- data.frame(
+  co2 = as.numeric(co2),
+  year = trunc(time(co2)),
+  month = month.abb[cycle(co2)]
+)
+co2_df$season <- 
+  ifelse(co2_df$month == "Dec"|co2_df$month == "Jan"|co2_df$month == "Feb",                          "Winter",
+  ifelse(co2_df$month == "Mar"|co2_df$month == "Apr"|co2_df$month == "May",                          "Spring",
+  ifelse(co2_df$month == "Jun"|co2_df$month == "Jul"| co2_df$month == "Aug",                          "Summer", "Autumn")))
+                                      
+
+
+
 # B)
 # YOUR CODE HERE
+co2_df %>%
+  mutate(season = factor(season, 
+                         levels = c("Winter", "Spring", "Summer","Autumn")))%>%
+  ggplot(aes(x = year, y = co2, color = season))+
+  geom_point(aes(color = season))+
+  scale_color_manual(values = c("Winter" = "#0072B2", "Spring" = "#009E73",
+                                "Summer" = "#CC79A7", "Autumn" = "#E69F00"))+
+  geom_jitter()+
+  theme_minimal(12)+
+  labs(title = "seasonal_co2", x = "years", y = "co2 concentration")
+
+  
+
+
+  
+
+
+
 ```
 :::
 
@@ -128,6 +189,23 @@ A)  Using the same `co2_df` as above, order the months by the calender order (no
 ```{r}
 # A)
 # YOUR CODE HERE
+
+cbf_palette <- diverge_hcl(7, h = c(260, 0), c = 100, l = c(30, 90, power = 1.2))
+co2_df %>%
+  mutate(month = factor(month, levels = month.abb)) %>%
+  ggplot(aes(x = year, y = co2, group = month))+
+  geom_point(aes(color = co2))+
+  theme_minimal(12)+
+  scale_fill_gradientn(colours = cbf_palette)+
+  facet_wrap(~ season)+
+  labs(title = "ordered_co2_friendly", x = "year", y = "co2 concentration")+
+  theme(legend.position = "none")
+  
+
+  
+  
+  
+
 ```
 :::
 
