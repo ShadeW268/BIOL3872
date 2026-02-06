@@ -42,8 +42,6 @@ if(Euler > 0){
   print("Euler is not positive")
 }
 
-growth
-
 ```
 :::
 
@@ -59,9 +57,11 @@ option1 <- 9
 option2 <- 13
 
 if(option1 > option2){
-  which_max <- option1
+  which_max <- "option1"
+} else if (option1 < option2){
+  which_max <- "option2"
 } else {
-  print("option2 is bigger")
+  print("option1 & option2 are equal")
 }
 
 ```
@@ -97,7 +97,6 @@ marine_survey$environments <- ifelse(marine_survey$species_count > quantile
                                             na.rm = TRUE),"diverse & hot", 
                                             "not")
                                      
-marine_survey                                       
 
 
 
@@ -116,7 +115,8 @@ numeric_columns <- sapply(marine_survey, is.numeric)
 diverse_hot_envs <- sapply(marine_survey[, numeric_columns], function(x) {
   median(ifelse(marine_survey$environments == "diverse & hot", x, NA), na.rm = TRUE)
 })
-diverse_hot_envs
+
+
 
 ```
 :::
@@ -167,6 +167,7 @@ numeric_summaries_df <- as.data.frame(do.call(cbind, numeric_summaries))
 # C) 
 numeric_summaries_df$variables <- row.names(numeric_summaries_df)
 
+
 ```
 :::
 
@@ -192,8 +193,7 @@ total_abundance <- fish_abundance %>%
     abundance = sum(num_cpue),
     .groups = "drop"
   )
-  
-total_abundance
+
 ```
 :::
 
