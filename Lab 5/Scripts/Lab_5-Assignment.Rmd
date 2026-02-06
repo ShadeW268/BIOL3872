@@ -2,8 +2,9 @@
 title: "Biol 3872 Lab5-Assignment"
 output: html_document
 date: "`r Sys.Date()`"
-author: ""
-student_id: ""
+author: "Shade Walker"
+student_id: "B00887685"
+---/
 ---
 
 **BEFORE STARTING:**\
@@ -21,29 +22,52 @@ library(tidyverse)
 ```
 
 ::: {style="background-color: #44AA99; padding: padding: 5px; border-radius: 2px;"}
-
 ## Task 1
 
 A)  Define an object `Euler` containing Euler's number (`exp(1)`). Write an `if` statement which tests if this value is positive and if so, create a new object called `growth` which calculates growth amount of a fish weighing 10 kg (P), at a 5% (0.05) growth rate each year (r), over two years (t).
 
 **Growth equation** = P \* e^r \* t^
+
 ```{r}
 # YOUR CODE HERE
+
+Euler <- exp(1)
+P <- 10
+r <- 0.05
+t <- 2
+
+if(Euler > 0){
+  growth <- P*exp(r*t)
+}else {
+  print("Euler is not positive")
+}
+
+growth
+
 ```
 :::
 
 ::: {style="background-color: #44AA99; padding: padding: 5px; border-radius: 2px;"}
-
 ## Task 2
 
 A)  Define an object `option1` equal to 9, and `option2` equal to 13. Write an explicit `ifelse` statement (not a vectorized version) which tests if one is bigger than the other and if `TRUE`, store this object name in a new variable called `which_max`.
+
 ```{r}
 # YOUR CODE HERE
+
+option1 <- 9
+option2 <- 13
+
+if(option1 > option2){
+  which_max <- option1
+} else {
+  print("option2 is bigger")
+}
+
 ```
 :::
 
 ::: {style="background-color: #44AA99; padding: padding: 5px; border-radius: 2px;"}
-
 ## Task 3
 
 A)  Using the `marine_survey` data frame, create a column called `environments` using an `ifelse` statement with two conditions: (1) `if` `species_count` is greater than the upper third quantile of `species_count` **and** (*&*) `if` `temperature_c` is greater than the mean temperature, call this row "diverse & hot"- if it's not `TRUE`, call this row "not"
@@ -51,6 +75,7 @@ A)  Using the `marine_survey` data frame, create a column called `environments` 
 **HINT** You can use a vectorized `ifelse` to achieve this. To grab the upper third quantile, check `?quantile` and the `probs =` argument.
 
 B)  Below I calculate the median value of each numeric column where `environments` are "diverse & hot" and store it in a vector called `diverse_hot_envs`. Fix this code to run properly.
+
 ```{r}
 # Create a data frame
 marine_survey <- data.frame(
@@ -64,6 +89,18 @@ marine_survey <- data.frame(
 # A) 
 
 # YOUR CODE HERE
+marine_survey$environments <- ifelse(marine_survey$species_count > quantile
+                                     (marine_survey$species_count, 
+                                       probs = 0.75) &
+                                       marine_survey$temperature_c >
+                                       mean(marine_survey$temperature_c, 
+                                            na.rm = TRUE),"diverse & hot", 
+                                            "not")
+                                     
+marine_survey                                       
+
+
+
 
 # B)
 # CODE TO FIX
@@ -74,24 +111,38 @@ marine_survey <- data.frame(
   #       na.rm = FALSE)
 #})
 
+numeric_columns <- sapply(marine_survey, is.numeric)
+
+diverse_hot_envs <- sapply(marine_survey[, numeric_columns], function(x) {
+  median(ifelse(marine_survey$environments == "diverse & hot", x, NA), na.rm = TRUE)
+})
+diverse_hot_envs
+
 ```
 :::
 
 ::: {style="background-color: #44AA99; padding: padding: 5px; border-radius: 2px;"}
-
 ## Task 4
 
 A)  Generate a vector called `sheep` of length 100 counting by 1, from 1 to 100.
 
 B)  Write a `for()` loop which multiples all elements of `sheep` by pi and store this in a vector called `counting_sheep`. *Remember you that need an empty vector to fill and that "[]" lets you store elements in vectors*.
+
 ```{r}
 # YOUR CODE HERE
+
+sheep <- seq(1, 100, 1)
+
+counting_sheep <- c()
+for (s in sheep) {
+  counting_sheep[[s]] <- s*pi
+}
+
 
 ```
 :::
 
 ::: {style="background-color: #44AA99; padding: padding: 5px; border-radius: 2px;"}
-
 ## Task 5
 
 A)  Using the `marine_survey` data frame, use the `lapply` function function to calculate the summary statistics of each numeric column and store this as a `list` called `numeric_summaries`.
@@ -99,35 +150,50 @@ A)  Using the `marine_survey` data frame, use the `lapply` function function to 
 B)  Modify the conversion step using `do.call` to flatten this list to a data frame called `numeric_summaries_df`.
 
 C)  Add a column called `variables` using the rownames.
+
 ```{r}
 #A)
 # CODE TO FIX
 #numeric_summaries <- vapply(marine_survey(sapply(marine_survey, is.character)), summary)
 
+numeric_summaries <- lapply(marine_survey[sapply(marine_survey, is.numeric)], summary)
+
 #B) 
 # CODE TO FIX
 # numeric_summaries_df <- do.call(cbind, replicate(numeric_summaries, as.data.frame.list))
 
+numeric_summaries_df <- as.data.frame(do.call(cbind, numeric_summaries))
 
 # C) 
-
+numeric_summaries_df$variables <- row.names(numeric_summaries_df)
 
 ```
 :::
 
 ::: {style="background-color: #44AA99; padding: padding: 5px; border-radius: 2px;"}
-
 ## Task 6
 
 Rewrite Task 2 in the lecture exercises (summing total abundance for each species, for each year) using group_by() and summarize() instead of a for() loop. Save in an object called `total_abundance`.
 
 ```{r}
 # Fish abundance data from lecture exercises
+
+fish_abundance <- read.csv("../Data/Groundfish_surveys.csv")
+
+
 ```
 
 ```{r}
 # YOUR CODE HERE
 
+total_abundance <- fish_abundance %>%
+  group_by(accepted_name, year) %>%
+  summarise(
+    abundance = sum(num_cpue),
+    .groups = "drop"
+  )
+  
+total_abundance
 ```
 :::
 

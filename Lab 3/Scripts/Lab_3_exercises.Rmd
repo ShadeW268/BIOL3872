@@ -437,6 +437,13 @@ C)  Create a new `iris` object (e.g., `iris_task4`) where the `Species` factor c
 
 ```{r}
 # YOUR CODE HERE
+ggplot(data = iris, aes(x = Sepal.Length, y = Sepal.Width, color = Species))+
+  geom_point(aes(size = Petal.Length)) +
+  theme_classic() +
+  labs(x = "Sepal Length (cm)", y = "Sepal Width (cm)") +
+  scale_x_continuous(breaks = 0.5) +
+  scale_y_continuous(breaks = 0.5)
+
 
 ```
 :::

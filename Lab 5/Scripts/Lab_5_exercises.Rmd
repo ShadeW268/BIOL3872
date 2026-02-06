@@ -116,7 +116,15 @@ Build a multi-chain `ifelse` statement based on the syntax above:
 
 ```{r}
 # YOUR CODE HERE
+x <- 14
 
+if (x/2 > 0) {
+  print(" x is divisible by 2")
+}else if(x/2 == 0){
+  print("x is not divisible by 2")
+} else {
+  print("x is something else")
+}
 ```
 
 \
@@ -288,6 +296,46 @@ Use the the ground fish survey data^1^ frame example from lab 2. Create a `for()
 ```{r}
 # YOUR CODE HERE
 
+#loop solution
+#for (g in groundfishes$num_cpue) {
+  #groundfish_total_abundance <- sum(groundfishes$num_cpue)
+  
+#}
+
+species <- unique(fish_abundance$accepted_name)
+year <- unique(fish_abundance$year)
+
+abundance_totals <- data.frame(
+  species=character(),
+  year=numeric(),
+  total_cpue=numeric()
+)
+
+for(sp in species){
+ for(yr in year){
+    
+    species_data <- fish_abundance[fish_abundance$accepted_name == sp &
+                                     fish_abundance$year == yr,]
+    
+    #calaculate the sum
+    total <- sum(species_data$num_cpue, na.rm=TRUE)
+    
+    #add to results
+    abundance_totals <- rbind(abundance_totals,
+                              data.frame(species=sp, year=yr, total_cpue=total))
+ }
+}
+
+
+#dplyer solution
+abundance_dplyr <- fish_abundance %>%
+  group_by(accepted_name, depth_category) %>%
+  summarise(
+    mean_cpue = mean(num_cpue, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+
 ```
 
 ### Vectorizing operations with \*apply
@@ -418,7 +466,19 @@ Create a function called `classify_abundance` that takes a numeric vector of abu
 ```{r}
 
 #YOUR CODE HERE
+classify_abundance <- function(x){
+  if(x == 0){
+    print("Absent")
+  } else if(x < 10){
+    print("Rare")
+  } else if(x >= 10 & x < 100){
+    print("Common")
+  } else{
+    print("Abundant")
+  }
+}
 
+classify_abundance(1001)
 ```
 
 # Data manipulation tools for flow control
