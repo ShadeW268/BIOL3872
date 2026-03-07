@@ -156,12 +156,22 @@ B)  Reproduce this same plot named `facet_petal_plot_reorder` where the facets a
 
 ```{r Task 7}
 # YOUR CODE HERE
-
+iris %>%
 #A)
 # YOUR CODE HERE
+  pivot_longer(cols = Petal.Length, 
+             names_to = "length",
+             values_to = "measurements") %>%
+  ggplot(aes(x = length, y = measurements))+
+  geom_point()+
+  geom_jitter()+
+  facet_wrap(vars(iris$Species), scales = "free") ->
+  facet_petal_plot
 
 #B)
 # YOUR CODE HERE
+facet_petal_plot_reorder <- reorde
+
 ```
 :::
 
@@ -175,8 +185,15 @@ B)  Create and store a ggplot object named `area_plot` comparing `petal_area` (x
 ```{r Task 8}
 #A)
 # YOUR CODE HERE
+#area <- iris$Petal.Length*iris$Petal.Width
+iris$petal_area <- iris$Petal.Length*iris$Petal.Width
+
 #B)
 # YOUR CODE HERE
+
+area_plot <- ggplot(iris, aes(x = petal_area, y = Sepal.Length))+
+  geom_point(aes(color = Species))
+area_plot
 ```
 :::
 
@@ -187,6 +204,7 @@ C)  Save the previous plot as a `ggplot` object in your Figures folder named `ar
 ```{r}
 #C)
 # YOUR CODE HERE
+
 ```
 
 Be sure before submitting this assignment to clear your and environment and re-run your code to ensure it works then submit this `markdown` file to the relevant Brightspace submission box.

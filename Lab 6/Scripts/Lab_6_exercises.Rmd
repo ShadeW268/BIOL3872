@@ -146,6 +146,7 @@ A)  Modify the enclosed character strings to a proper (unambiguous) date or date
 # YOUR CODE HERE
 
 "February-26-2026"
+as.Date("February-26-2026", format = "%B-%d-%Y")
 
 "Jul/29/01"
 
@@ -247,6 +248,21 @@ D)  Create an object called `Bedford_Date` by combining the `year`, `month`, and
 
 ```{r}
 # YOUR CODE HERE
+#converting to a Date data type
+Bedford_ts$Date <- as.Date(Bedford_ts$Date)
+
+#creating extra columns by extracting info from Date column
+Bedford_ts$Year <- year(Bedford_ts$Date)
+Bedford_ts$Month <- month(Bedford_ts$Date)
+Bedford_ts$Day <- day(Bedford_ts$Date)
+
+#converting month numbers to names in a new column
+Bedford_ts$Month_name <- month.abb[Bedford_ts$Month]
+
+#combiningyear, month, and day columns into a new date object
+Bedford_ts %>%
+  Bedford_Date
+
 
 ```
 

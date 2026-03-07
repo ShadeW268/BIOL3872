@@ -2,8 +2,8 @@
 title: "Biol 3872 Lab7-Assignment"
 output: html_document
 date: "`r Sys.Date()`"
-author: ""
-student_id: ""
+author: "Shade Walker"
+student_id: "B00887685"
 ---
 
 \
@@ -22,7 +22,6 @@ library(sdmpredictors)
 ```
 
 ::: {style="background-color: #44AA99; padding: padding: 5px; border-radius: 2px;"}
-
 ## Task 1 {3 points}
 
 A)  We have created a mock raster (`rast`) below, try plotting it. Store the summary of this raster layer in a variable called `rast_summary`
@@ -36,15 +35,16 @@ rast <- rast(ncol = 50, nrow = 50,  xmin = 1, xmax = 1.2, ymin = 1, ymax = 1.2)
 values(rast) <- sample(1:ncell(rast), ncell(rast))
 
 # YOUR CODE HERE
-
+plot(rast)
 # A)
+rast_summary <- summary(rast)
 
   
 # B)
-
+rast_extent <- ext(rast)
 
 # C)
-
+rast_res <- res(rast)
 
 ```
 :::
@@ -52,7 +52,6 @@ values(rast) <- sample(1:ncell(rast), ncell(rast))
 \
 
 ::: {style="background-color: #44AA99; padding: padding: 5px; border-radius: 2px;"}
-
 ## Task 2 {3 points}
 
 A)  We have generated another mock raster (`rast_gauss`) which computes a gaussian distribution of values across the same grid. Stack this raster with `rast` from Q1 and call this `rast_stack`.
@@ -74,13 +73,13 @@ values(rast_gauss) <- exp(-((coords$x - x0)^4 + (coords$y - y0)^2) / (2 * sigma^
 
 # YOUR CODE HERE
 # A)
-
+rast_stack <- c(rast, rast_gauss)
 
 # B) 
-
+names(rast_stack) <- c("Random", "Gaussian")
 
 # C)
-
+mean_rast <- mean(rast_stack)
 
 ```
 :::
@@ -88,7 +87,6 @@ values(rast_gauss) <- exp(-((coords$x - x0)^4 + (coords$y - y0)^2) / (2 * sigma^
 \
 
 ::: {style="background-color: #44AA99; padding: padding: 5px; border-radius: 2px;"}
-
 ## Task 3 {3 points}
 
 A)  Read in the Ecoregions polygons from your `data` folder to an `sf` object called `Ecoregions`.
@@ -100,20 +98,26 @@ C)  Plot `trop_atl` using `ggplot`, remove the legend, and fill the Ecoregions b
 ```{r}
 # YOUR CODE HERE
 # A)
-
+Ecoregions <- read_sf("../Data/MEOW/", 
+                      layer = "meow_ecos")
 
 # B)
+trop_atl <- Ecoregions %>%
+  filter(REALM == "Tropical Atlantic")
+trop_atl <- st_transform(trop_atl, "EPSG:3857")
 
 
 # C)
-
+trop_atl_p <- ggplot(trop_atl, aes(fill = ECOREGION))+
+  geom_sf()+
+  theme(legend.position = "none")
+trop_atl_p
 ```
 :::
 
 \
 
 ::: {style="background-color: #44AA99; padding: padding: 5px; border-radius: 2px;"}
-
 ## Task 4 {2 points}
 
 Load in the coastline file from `rnaturalearth` at "medium" resolution. Name this `coastline`.
@@ -124,17 +128,26 @@ B)  Plot `trop_coasts` and `trop_atl` together using `ggplot` (which order shoul
 
 ```{r}
 # YOUR CODE HERE
+coastline <- ne_countries(scale = "Medium")
+
 # A)
+coastline <- st_transform(coastline, "EPSG:3857")
+trop_coasts <- coastline %>%
+  st_crop(st_bbox(trop_atl))
 
 # B)
-
+trop_atl_coasts_p <- ggplot(trop_atl)+
+  geom_sf(aes(fill = ECOREGION), alpha = 0.5)+
+  geom_sf(data = trop_coasts, fill = "grey70", linewidth = 0.1)+
+  theme_minimal(12)+
+  theme(legend.position = "none")
+trop_atl_coasts_p
 ```
 :::
 
 \
 
 ::: {style="background-color: #44AA99; padding: padding: 5px; border-radius: 2px;"}
-
 ## Task 5 {4 points}
 
 A)  Read in `Groundfish_surveys.csv` from your data folder.
@@ -148,15 +161,29 @@ D)  Plot `trawls_sf` points, `Ecoregions_hake`, and `coastline_hake` using `ggpl
 ```{r}
 # YOUR CODE HERE
 # A)
-
+trawls <- read.csv("../Data/Groundfish_surveys.csv")
 
 # B)
+trawls_sf <- st_as_sf(trawls,
+                      coords = c("longitude", "latitude"),
+                      crs = st_crs("EPSG:4326")) %>%
+  filter(accepted_name == "Merluccius bilinearis")
 
 
 # C)
+Ecoregions_hake <- Ecoregions[lengths(st_intersects(Ecoregions, trawls_sf)) > 0,]
 
+coastline_hake <- st_transform(coastline, "EPSG:4326") %>%
+  st_crop(trawls_sf)
 
 # D)
+NW_trawls_p <- ggplot(Ecoregions_hake)+
+  geom_sf(aes(fill = ECOREGION), alpha = 0.25)+
+  geom_sf(data = trawls_sf, color = "purple", alpha = 0.25, size = 0.1)+
+  geom_sf(data = coastline_hake, fill = "grey20", linewidth = 0.1)+
+  theme_minimal(12)
+NW_trawls_p
+
 
 ```
 :::
@@ -164,7 +191,6 @@ D)  Plot `trawls_sf` points, `Ecoregions_hake`, and `coastline_hake` using `ggpl
 \
 
 ::: {style="background-color: #44AA99; padding: padding: 5px; border-radius: 2px;"}
-
 ## Task 6 {3 points}
 
 A)  Load and stack the following layers from `sdmpredictors`: `BO_bathymean` (mean bottom depth), `BO_sstmean` (mean sea surface temp), `BO22_tempmax_bdmax` (max temp at bottom), `BO2_curvelmean_ss` (mean current velocity). Call this `rast_stack`.
@@ -176,12 +202,21 @@ C)  Write a simple `for()` loop which, across layer `i` in `rast_stack_hake` (`1
 ```{r}
 # YOUR CODE HERE
 # A)
-
+rast_stack <- rast(load_layers(c("BO_bathymean", "BO_sstmean", "BO22_tempmax_bdmax", "BO2_curvelmean_ss")))
 
 # B)
-
+rast_stack_hake <- mask(crop(rast_stack, Ecoregions_hake), Ecoregions_hake)
+names(rast_stack_hake) <- c("mean bottom depth", "mean sea surface temp",
+                            "max temp at bottom", "mean current velocity")
 
 # C)
+for (i in 1:nlyr(rast_stack_hake)) {
+  log_lyr <- log(rast_stack_hake[[i]])
+  plot(log_lyr, col = oce.colorsViridis(7),
+       main = names(rast_stack_hake)[i])
+}
+
+
 
 ```
 :::
