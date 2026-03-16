@@ -52,7 +52,7 @@ We can perform spatial operations using the `sf` package on vector data (lines, 
 coastline <- ne_countries(scale = "Medium", returnclass = "sf")
 
 # Trawl survey data
-trawls <- read.csv("../../Lab7/Data/Groundfish_surveys.csv") %>% 
+trawls <- read.csv("C:/Users/Shadé Walker/Downloads/BIOL 3872 Files/BIOL3872/Lab 7/Data/Groundfish_surveys.csv") %>% 
   st_as_sf(coords = c("longitude", "latitude"),
            crs = st_crs("EPSG:4326"))
 
@@ -76,7 +76,7 @@ Projection :
 # Transform
 coastline_proj <- st_transform(coastline, "EPSG:2954")
 
-# Calculate area
+# Calculate area (2 area values corresponding to the 2 polygons)
 st_area(coastline_proj)
 
 # Change units
@@ -154,7 +154,7 @@ sst <- rast(load_layers("BO_sstmean"))
 names(sst) <- "SST"
 
 # Trawl data 
-trawls <- read.csv("../../Lab7/Data/Groundfish_surveys.csv") %>% 
+trawls <- read.csv("C:/Users/Shadé Walker/Downloads/BIOL 3872 Files/BIOL3872/Lab 7/Data/Groundfish_surveys.csv") %>% 
   st_as_sf(# Notice that this (data) arguement is empty, it is piped in above
            
     # this defines the coordiates to create geometry column
@@ -332,9 +332,17 @@ B)  Map this similar to our approach above, apply a nice color palette, and edit
 ```{r}
 
 # A)
+grid_summary <- grid_summary %>%
+  drop_na()
 
+grid_summary <- grid_summary[!is.na(grid_summary$med_abund),]
 
 # B)
+ggplot()+
+  geom_sf(data = grid_summary, aes(fill = med_abund))+
+  geom_sf(data = coastline, fill ="grey")+
+  theme_minimal(12)+
+  scale_fill_gradient(low = "white", high = "pink")
 
 
 ```
@@ -438,10 +446,20 @@ C)  Using `ggplot`, plot this grid together with the `coastline` shapefile, fill
 ```{r}
 
 # A)
-
+trawls_proj <- st_transform(trawls, "EPSG:2954")
 
 # B)
+grid_proj <- fishnet(trawls_proj,
+                     square = F,
+                     cellsize = c(2e4, 2e4)) %>%
+  st_as_sf()%>%
+  mutate(grid_id = row_number())
 
+# C)
+ggplot()+
+  geom_sf(data = grid_proj, aes(fill = grid_id))+
+  geom_sf(data = coastline_proj, fill = "black")+
+  theme_minimal(12)
 
 ```
 
