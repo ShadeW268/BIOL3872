@@ -1,0 +1,304 @@
+---
+title: "Midterm 2"
+output: html_document
+date: "`r Sys.Date()`"
+author: "Shade Walker"
+student_id: "B00887685"
+---
+
+Welcome to BIOL 3872 midterm 2.\
+
+**BEFORE STARTING:**\
+1. Include your name (e.g., "Sophie Tattrie", as shown in Brightspace) in the `author` section and Banner ID (e.g., B00123456) in the `student_id` section above as text.\
+
+In this software, you can always query the help functions **if** you know the functions name (e.g., `?mean` will return documentation on what this function does, it will not autofill as in RStudio).
+
+```{r}
+library(tidyverse)
+library(terra)
+library(sf)
+library(sdmpredictors)
+```
+
+## Datetime formatting
+
+#### Question 1 {4 points}:
+
+Convert the character strings for the following dates/datetimes to unambiguous formats using `lurbidate` functions. Store these as variables with the given names. For datetimes, use **calender time, not local time and be sure to assign the time zone if specified**.
+
+a)  Buzz Aldrin taking the first step on the moon: `date1 <- July/21/1969 02:56 UTC`
+
+```{r}
+# a) 
+date1 <- as.POSIXct("July/21/1969 02:56", format = "%B/%d/%Y %I:%M", tz = "UTC")
+
+```
+
+b)  HMS Challenger discovers the Mariana Trench: `date2 <- March 23rd, 1875`
+
+```{r}
+
+# b)
+date2 <- as.POSIXct("March-23-1875", format = "%B-%d-%Y")
+
+```
+
+c)  Jaws is released in theatres: `date3 <- June-20-1975`
+
+```{r}
+
+# c)
+date3 <- as.POSIXct("June-20-1975", format = "%B-%d-%Y")
+
+```
+
+d)  Eliud Kipchoge breaks a 2-hour marathon: `date4 <- Oct-12-2019 08:14:40 UTC`
+
+```{r}
+
+# d)
+date4 <- as.POSIXct("Oct-12-2019 08:14:40", format = "%b-%d-%Y %I:%M:%S", tz = "UTC")
+
+```
+
+## Time math
+
+#### Question 2 {3 points}:
+
+a)  Convert the vector `events` to a date object called `event_dates`.
+
+```{r}
+events <- c("1995-08-24", "2001-10-25", "2007-06-29", "2010-04-03", "2016-07-06", "2022-11-30")
+
+# a)
+event_dates <- as.Date(events, format = "%Y-%m-%d")
+```
+
+b)  Calculate the `diff`erence between each date in sequence (date 1 to date 2, date 2 to date 3, etc.) and store in a vector called `event_gaps` using a `lubridate` function.
+
+```{r}
+
+# b) 
+event_gaps <- as.vector(diff(event_dates))
+
+```
+
+c)  Calculate the total number of days spanned from the first to the last date in `events_format` and store in an object called `total_span`. **HINT** : Think of the class the object `total_span` should be, and specify it.
+
+```{r}
+
+#c) 
+total_span <- as.vector(sum(event_gaps))
+
+```
+
+## Date handling & plotting
+
+#### Question 3 {3 points}:
+
+a)  Read in the Bedford Basin microbial time series data (`BedfordBasin_ts.csv`) called `bedford_ts`. Convert the `Date` column to a `date` format.
+
+```{r}
+#a
+bedford_ts <- read.csv("Lab 6/Data/BedfordBasin_ts.csv")
+bedford_ts$Date <- as.Date(bedford_ts$Date)
+
+```
+
+b)  Create new columns in `bedford_ts` for the `year`, `month`, `week` (week number), and `day` information from the `date` column. Use the `month` column to create another column for full month names (e.g., December) called `monthname`. Ensure these columns are named `year`, `month`, `monthname`, `week`, and `day`.
+
+```{r}
+#b
+bedford_ts$year <- year(bedford_ts$Date)
+bedford_ts$month <- month(bedford_ts$Date)
+bedford_ts$week <- week(bedford_ts$Date)
+bedford_ts$day <- day(bedford_ts$Date)
+bedford_ts$monthname <- month.name[bedford_ts$month]
+```
+
+c)  Create a `ggplot` object called `bedford_ts_n` which displays the count (`n`) of the total number of observations (rows) for each `week` and `monthname`. Plot `week` on the x-axis, count (`n`) on the y-axis, and color points by the `monthname` **ordered by calender months, not alphabetical**.
+
+*The Bedford Basin time-series aims to collect triplicate samples each week of the month, this record spans 4 years meaning a perfect sampling record would contain at least n = 12, this plot shows how often this was achieved.*
+
+```{r}
+
+# c)
+bedford_ts_n <- bedford_ts %>%
+  mutate(monthname = factor(monthname, levels = month.name))%>%
+  count(week)%>%
+  ggplot(aes)
+  
+  
+
+
+```
+
+#### Question 4 {3 points}:
+
+a)  Filter `bedford_ts` for all data in 2015-2016 into a dataframe called `bedford_ts_14_15`.
+
+```{r}
+
+# a)
+bedford_ts_14_15 <- as.data.frame(bedford_ts %>%
+                                    filter(year == "2015"| year == "2016"))
+
+```
+
+b)  Creating a new data frame called `bedford_ts_14_15_avg`, summarizing the average microbial `Richness` for each `monthname` across each `year`. Call this average richness column `avg_richness`.
+
+```{r}
+
+# b)
+bedford_ts_14_15_avg <- bedford_ts_14_15 %>%
+  group_by(monthname)%>%
+  summarise(mean = mean(Richness))
+
+  
+  
+
+```
+
+c)  Plot `bedford_ts_14_15_avg` in `ggplot` named `ts_14_15_avg_p` which displays `monthname` against `avg_richness` (which variable should be on x/y axes?). Modify `year` to a `factor` to keep the proper year order, and color points by `year`. Ensure that `monthname` is **ordered by calender months, not alphabetical**. Angle the `monthname` to prevent overlapping on the axis.
+
+```{r}
+
+# c)
+ts_14_15_avg_p <- bedford_ts_14_15_avg %>%
+  mutate(year = factor(year, levels = year), monthname = factor(monthname, levels = month.name))%>%
+  ggplot(x = monthname, y = avg_richness, color = year)+
+  geom_point()+
+  theme(axis.text.right = 0.50)
+    
+  
+
+
+```
+
+## Spatial data
+
+#### Question 5 {4 points}:
+
+a)  Read in the `Groundfish_surveys.csv` as an `sf` object (points) called `trawls`. Read in the Marine Ecoregions of the World as an `sf` object (polygons) called `ecoregions_shelf_seas` and filter to keep all polygons in the `Cold Temperate Northwest Atlantic` province. Ensure that both are set with an unprojected coordinate reference system (CRS) `EPSG:4326`.
+
+```{r}
+# a 
+trawls <- read.csv("Lab 7/Data/Groundfish_surveys.csv")
+trawls <- st_as_sf(trawls,
+                   coords = c("longitude", "latitude"),
+                   crs = st_crs("EPSG:4326"))
+  
+
+ecoregions_shelf_seas <- read_sf("Lab 7/Data/MEOW/", layer = "meow_ecos")
+ecoregions_shelf_seas %>%
+  filter(PROVINCE == "Cold Temperate Northwest Atlantic")%>%
+  st_transform("EPSG:4326")
+
+  
+
+
+```
+
+b)  Load (`load_layers`) a `SpatRaster` stack from `sdmpredictors` called `rast_stack` for the following layers:
+
+-   `BO2_tempmean_bdmax` (Sea water temperature average at seafloor)
+-   `BO21_salinitymean_bdmax` (Sea water salinity average at seafloor)
+-   `BO2_nitratemean_bdmax` (Nitrate concentration average at seafloor)
+-   `BO21_ppmean_bdmax` (Primary production average at seafloor)
+
+Don't forget that the names to load layers must be given as a `vector`. Ensure that `rast_stack` has a coordinate reference system (CRS) which is compatible with the above `sf` objects.
+
+```{r}
+# b)
+rast_stack <- rast(load_layers(c("BO2_tempmean_bdmax",
+                                 "BO21_salinitymean_bdmax",
+                                 "BO2_nitratemean_bdmax",
+                                 "BO21_ppmean_bdmax")))
+
+rast_stack <- project(rast_stack, "EPSG:4326")
+```
+
+c)  Rename the layers in `rast_stack` to: `b_temp`, `b_salinity`, `b_nitrate`, and `b_production`.
+
+```{r}
+
+# c)
+names(rast_stack) <- c("b_temp", "b_salinity", "b_nitrate", "b_production")
+
+```
+
+d)  Create a new `SpatRaster` stack called `rast_stack_NW` which is **masked** and **cropped** to `ecoregions_shelf_seas`. Plot to check that this worked.
+
+```{r}
+
+# d)
+rast_stack_NW <- mask(crop(rast_stack, ext(ecoregions_shelf_seas))
+
+```
+
+#### Question 6 {3 points}:
+
+a)  Using a spherical geometry approach, calculate the area in $km^2$ of the first ecoregion polygon in `ecoregions_shelf_seas`. Store in an objected called `ecoregion_area_1`.
+
+```{r}
+
+#a) 
+ecoregion_area_1 <- units::set_units(st_area(ecoregions_shelf_seas[1,]), "km^2")
+
+```
+
+b)  Using a projection approach, calculate the area in $km^2$ of the second ecoregion polygon in `ecoregions_shelf_seas`. Store in an objected called `ecoregion_area_2`.
+
+```{r}
+
+#b) 
+ecoregions_shelf_seas_proj <- st_transform(ecoregions_shelf_seas, "EPSG:2954")
+ecoregion_area_2 <- units::set_units(st_area(ecoregions_shelf_seas_proj[2,]), "km^2")
+
+```
+
+c)  Calculate the distance in km between the first and fourth ecoregion polygons in `ecoregions_shelf_seas` and store as `ecoregion_dist_km`.
+
+```{r}
+
+#c) 
+ecoregion_dist_km <- as.numeric(st_distance(ecoregions_shelf_seas[1,], ecoregions_shelf_seas[4,] ))/1000
+
+```
+
+#### Question 7 {2 points}:
+
+a)  Use the `trawls` sf object to spatially filter `ecoregions_shelf_seas` to retain only ecoregions where points are found. Call these filtered polygons `ecoregions_shelf_seas_NW`.
+
+**BIG HINT:** We have done this in two different ways: (1) by indexing polygons using a logical condition (TRUE/FALSE) for the `lengths` at which `st_intersects` are positive, (2) by using a (`dplyr`-"like") `sf` filter function.
+
+```{r}
+# a)
+ecoregions_shelf_seas_NW <- ecoregions_shelf_seas[lengths(st_intersects(trawls) != 0)]
+
+
+```
+
+b)  `Filter` the `trawls` for only cod (`Gadus morhua`) in the species `accepted_name`. Call this variable `trawls_cod`.
+
+```{r}
+# b)
+trawls_cod <- trawls %>%
+  filter(accepted_name == "Gadus morhua")
+  
+
+```
+
+c)  Now create a `ggplot` called `ecoregions_cod_p` which visualizes cod abundance across ecoregions in `ecoregions_shelf_seas_NW`.
+
+Fill ecoregions by their unique ecoregion name and plot together with `trawls_cod` where point size corresponds to cod abundance (`num_cpue`); set point transparency to 60%.
+
+```{r}
+# c)
+ecoregions_cod_p <- ecoregions_shelf_seas %>%
+  ggplot(aes(fill = ECOREGION))+
+  geom_point(aes(trawls_cod, size = num_cpue, alpha = 0.60))+
+  theme_classic()
+
+
+```
